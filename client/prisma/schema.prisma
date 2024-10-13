@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model AdAccount {
+  id                          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId                      String   @db.ObjectId
+  test                        Boolean
+  totalBudgetCurrencyCode      String
+  totalBudgetAmount            String
+  notifiedOnCreativeRejection  Boolean
+  notifiedOnNewFeaturesEnabled Boolean
+  notifiedOnEndOfCampaign      Boolean
+  servingStatuses              String[]
+  type                         String
+  notifiedOnCampaignOptimization Boolean
+  versionTag                   String
+  reference                    String
+  notifiedOnCreativeApproval   Boolean
+  createdAt                    DateTime
+  createdActor                 String
+  lastModifiedAt               DateTime
+  lastModifiedActor            String
+  name                         String
+  currency                     String
+  adAccountId                  Int      @unique
+  status                       String
+  totalBudgetEndsAt            DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id             String     @id @default(auto()) @map("_id") @db.ObjectId
+  name           String?
+  email          String?    @unique
+  emailVerified  DateTime?
+  image          String?
+  hashedPassword String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  accounts       Account[]
+  adAccounts     AdAccount[]
+}
+
+model Account {
+  id                        String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId                    String  @db.ObjectId
+  type                      String
+  provider                  String
+  providerAccountId         String
+  refresh_token             String? @db.String
+  access_token              String? @db.String
+  expires_at                Int?
+  refresh_token_expires_in  Int?
+  token_type                String?
+  scope                     String?
+  id_token                  String? @db.String
+  session_state             String?
+
+  // delete user record thru prisma will remove associated account record
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}

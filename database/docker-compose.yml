@@ -1,0 +1,28 @@
+name: lms_app # project name, override the default naming behavior by docker
+
+services:
+  mongo1:
+    image: mongo:latest
+    container_name: lms_app # Specifying the container name
+    command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27017']
+    ports:
+      - 27017:27017
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'host.docker.internal:27017'}]}) }" | mongosh --port 27017 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
+    environment:
+      - MONGO_INITDB_DATABASE=admin
+      # - MONGO_INITDB_ROOT_USERNAME=admin
+      # - MONGO_INITDB_ROOT_PASSWORD=admin
+    volumes:
+      - 'mongodb_config:/data/configdb' # Named volume for configdb
+      - '$PWD/.docker/mongo/db:/data/db' # Host volume
+
+volumes:
+  mongodb_config: # Named volume
