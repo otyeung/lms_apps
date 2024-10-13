@@ -42,9 +42,18 @@ LINKEDIN_API_VERSION = 202409 # replace with your own API version, in the format
 
 ### Initialte Prisma for Mongodb
 
+Initialze Prisma for Mongodb and connect to Mongodb database:
+
 ```bash
 cd client
 npx prisma generate
+```
+
+If you make change to schema, you can run the following command to update the Prisma Client:
+
+```bash
+cd client
+npx prisma db push
 ```
 
 ### Run the (client) development server:

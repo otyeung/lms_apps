@@ -1,6 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
+// Prisma schema file
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,65 +8,67 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// AdAccount model
 model AdAccount {
-  id                          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId                      String   @db.ObjectId
+  id                           String   @id @default(auto()) @map("_id") @db.ObjectId // MongoDB's _id
+  adAccountId                 String   @map("adAccountId") @unique // Map to LinkedIn's ad account id
+  userId                      String   // Reference to User model (not nullable)
   test                        Boolean
-  totalBudgetCurrencyCode      String
-  totalBudgetAmount            String
+  totalBudgetCurrencyCode     String?
+  totalBudgetAmount           Float?
   notifiedOnCreativeRejection  Boolean
   notifiedOnNewFeaturesEnabled Boolean
-  notifiedOnEndOfCampaign      Boolean
-  servingStatuses              String[]
-  type                         String
-  notifiedOnCampaignOptimization Boolean
-  versionTag                   String
-  reference                    String
+  notifiedOnEndOfCampaign     Boolean
+  servingStatuses             String[]
+  type                        String
+  versionTag                  String?
+  reference                   String
   notifiedOnCreativeApproval   Boolean
-  createdAt                    DateTime
-  createdActor                 String
-  lastModifiedAt               DateTime
-  lastModifiedActor            String
-  name                         String
-  currency                     String
-  adAccountId                  Int      @unique
-  status                       String
-  totalBudgetEndsAt            DateTime?
+  createdAt                   DateTime @default(now())
+  createdActor                String
+  lastModifiedAt              DateTime @updatedAt
+  lastModifiedActor           String
+  name                        String
+  currency                    String
+  status                      String
+  totalBudgetEndsAt           DateTime?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                        User      @relation("UserAdAccounts", fields: [userId], references: [id], onDelete: Cascade) // Reference to User model with cascading delete
 }
 
+// User model
 model User {
-  id             String     @id @default(auto()) @map("_id") @db.ObjectId
-  name           String?
-  email          String?    @unique
-  emailVerified  DateTime?
-  image          String?
-  hashedPassword String?
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  id                          String     @id @default(auto()) @map("_id") @db.ObjectId
+  name                        String?
+  email                       String?    @unique
+  emailVerified               DateTime?
+  image                       String?
+  hashedPassword              String?
+  createdAt                   DateTime   @default(now())
+  updatedAt                   DateTime   @updatedAt
 
-  accounts       Account[]
-  adAccounts     AdAccount[]
+  accounts                    Account[]  @relation("UserAccounts") // Define the relation with Account
+  adAccounts                  AdAccount[] @relation("UserAdAccounts") // Define the relation with AdAccount
 }
 
+// Account model
 model Account {
-  id                        String  @id @default(auto()) @map("_id") @db.ObjectId
-  userId                    String  @db.ObjectId
-  type                      String
-  provider                  String
-  providerAccountId         String
-  refresh_token             String? @db.String
-  access_token              String? @db.String
-  expires_at                Int?
-  refresh_token_expires_in  Int?
-  token_type                String?
-  scope                     String?
-  id_token                  String? @db.String
-  session_state             String?
+  id                          String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId                      String     @db.ObjectId
+  type                        String
+  provider                    String
+  providerAccountId           String
+  refresh_token               String?    @db.String
+  access_token                String?    @db.String
+  expires_at                  Int?
+  refresh_token_expires_in    Int?
+  token_type                  String?
+  scope                       String?
+  id_token                    String?    @db.String
+  session_state               String?
 
-  // delete user record thru prisma will remove associated account record
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Define relation to User with cascading delete
+  user                        User       @relation("UserAccounts", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
