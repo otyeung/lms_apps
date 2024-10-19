@@ -4,12 +4,14 @@ import prisma from './libs/prismadb'
 import { getAdAccounts } from './api/adAccount/route'
 import AdAccount from './component/adAccount'
 import Calendar from './component/calendar'
+import { redirect } from 'next/navigation' // Import redirect
 
 export default async function Home() {
   const session = await getServerSession(authOptions)
 
   if (!session) {
-    return <p>Please log in to view this page.</p>
+    // Redirect to the login page if there's no session
+    redirect('/login')
   }
 
   const account = await prisma.account.findFirst({

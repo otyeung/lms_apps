@@ -16,7 +16,7 @@ export default function Login() {
   // protecting the page, allowing only unauthenticated users
   useEffect(() => {
     if (session?.status === 'authenticated') {
-      router.push('/dashboard')
+      router.push('/')
     }
   })
 

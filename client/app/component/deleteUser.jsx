@@ -1,25 +1,16 @@
 // component/DeleteUser.jsx
 
 import React from 'react'
+import axios from 'axios'
 
 const DeleteUser = ({ userId, onDeleteSuccess }) => {
   const handleDelete = async () => {
     try {
-      const response = await fetch('/api/deleteUser', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId }),
+      const response = await axios.delete('/api/deleteUser', {
+        data: { userId }, // Axios requires the body data to be passed in the `data` key for DELETE requests
       })
 
-      if (!response.ok) {
-        const errorMessage = await response.text()
-        throw new Error(`Error deleting user: ${errorMessage}`)
-      }
-
-      const data = await response.json()
-      console.log(data.message) // Success message
+      console.log(response.data.message) // Success message
       onDeleteSuccess() // Callback for successful deletion
     } catch (error) {
       console.error('Error deleting user:', error)

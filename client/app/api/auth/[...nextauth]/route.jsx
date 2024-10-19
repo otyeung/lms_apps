@@ -1,4 +1,4 @@
-// file : app/api/auth/[...nextauth]/route.jsx
+// file: app/api/auth/[...nextauth]/route.jsx
 
 import NextAuth from 'next-auth/next'
 import prisma from '../../../libs/prismadb'
@@ -25,7 +25,7 @@ export const authOptions = {
     }),
   ],
   // Use a secret for signing the session
-  secret: process.env.SECRET,
+  secret: process.env.NEXTAUTH_SECRET, // Updated to use NEXTAUTH_SECRET
   // Use JWT strategy for sessions
   session: {
     strategy: 'jwt',
