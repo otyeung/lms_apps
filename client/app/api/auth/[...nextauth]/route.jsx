@@ -1,21 +1,21 @@
+// file : app/api/auth/[...nextauth]/route.jsx
+
 import NextAuth from 'next-auth/next'
 import prisma from '../../../libs/prismadb'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import LinkedInProvider from 'next-auth/providers/linkedin'
-import bcrypt from 'bcrypt'
 
+// Define the authOptions for NextAuth
 export const authOptions = {
-  // set the adapter to the PrismaAdapter
+  // Set the adapter to the PrismaAdapter
   adapter: PrismaAdapter(prisma),
-  // set the providers to the GitHub, Google, and LinkedIn providers
+  // Set the providers, including LinkedIn
   providers: [
     LinkedInProvider({
-      // set the clientId to the LINKEDIN_ID environment variable
+      // Use environment variables for client ID and secret
       clientId: process.env.LINKEDIN_CLIENT_ID,
-      // set the clientSecret to the LINKEDIN_SECRET environment variable
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-      //  Put all required application scope from LinkedIn
-      // set the authorization parameters to the required application scope from LinkedIn
+      // Define required application scopes for LinkedIn
       authorization: {
         params: {
           scope:
@@ -24,15 +24,33 @@ export const authOptions = {
       },
     }),
   ],
-  // set the secret to the SECRET environment variable
+  // Use a secret for signing the session
   secret: process.env.SECRET,
-  // set the session to use JWT
+  // Use JWT strategy for sessions
   session: {
     strategy: 'jwt',
   },
-  // set the debug to the NODE_ENV environment variable
+  // Callbacks for handling session
+  callbacks: {
+    async session({ session, token }) {
+      // Include user ID in the session from the token
+      if (token?.sub) {
+        session.user.id = token.sub // Assuming token.sub holds the user ID
+      }
+      return session
+    },
+    async jwt({ token, user }) {
+      // If a user is present, add their ID to the token
+      if (user) {
+        token.sub = user.id // Store user ID in the token
+      }
+      return token
+    },
+  },
+  // Enable debug messages in development
   debug: process.env.NODE_ENV === 'development',
 }
 
+// Create the NextAuth handler
 const handler = NextAuth(authOptions)
 export { handler as GET, handler as POST }

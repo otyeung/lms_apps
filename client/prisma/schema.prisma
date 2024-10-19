@@ -12,10 +12,10 @@ datasource db {
 model AdAccount {
   id                           String   @id @default(auto()) @map("_id") @db.ObjectId // MongoDB's _id
   adAccountId                 String   @map("adAccountId") @unique // Map to LinkedIn's ad account id
-  userId                      String   // Reference to User model (not nullable)
-  test                        Boolean
-  totalBudgetCurrencyCode     String?
-  totalBudgetAmount           Float?
+  userId                      String   @db.ObjectId // Reference to User model (not nullable)
+  test                        Boolean? // Optional field
+  totalBudgetCurrencyCode     String?  // Optional field
+  totalBudgetAmount           Float?   // Optional field
   notifiedOnCreativeRejection  Boolean
   notifiedOnNewFeaturesEnabled Boolean
   notifiedOnEndOfCampaign     Boolean
