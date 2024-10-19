@@ -1,11 +1,13 @@
 // app/(site)/dashboard/page.jsx
+
 'use client'
 
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect } from 'react'
-import DeleteUser from '../../component/deleteUser' // Adjust the path as necessary
+import axios from 'axios' // Import axios
+import DeleteUser from '../../component/DeleteUser' // Adjust the path as necessary
 
-const Dashboard = () => {
+const User = () => {
   const { data: session } = useSession()
   const [user, setUser] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -16,14 +18,15 @@ const Dashboard = () => {
       if (!session?.user?.id) return
 
       try {
-        const response = await fetch(`/api/checkUser?id=${session.user.id}`)
-        if (!response.ok) {
-          throw new Error('Error fetching user data')
-        }
-        const userData = await response.json()
-        setUser(userData)
+        const response = await axios.get(`/api/checkUser`, {
+          params: { id: session.user.id },
+        })
+
+        setUser(response.data)
       } catch (error) {
-        setErrorMessage(`Error fetching user data: ${error.message}`)
+        setErrorMessage(
+          `Error fetching user data: ${error.response?.data || error.message}`
+        )
       }
     }
 
@@ -42,25 +45,16 @@ const Dashboard = () => {
     setErrorMessage('')
 
     try {
-      const response = await fetch('/api/deleteUser', {
-        // Updated the API endpoint to match your route
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId }),
+      const response = await axios.delete('/api/deleteUser', {
+        data: { userId }, // Pass userId in the body for DELETE request
       })
 
-      if (response.ok) {
-        const message = await response.text()
-        console.log(message)
-        signOut() // Sign out after successful deletion
-      } else {
-        const error = await response.text()
-        setErrorMessage(`Error deleting user: ${error}`)
-      }
+      console.log(response.data)
+      signOut() // Sign out after successful deletion
     } catch (error) {
-      setErrorMessage(`Unexpected error: ${error.message}`)
+      setErrorMessage(
+        `Error deleting user: ${error.response?.data || error.message}`
+      )
     } finally {
       setIsDeleting(false)
     }
@@ -68,12 +62,12 @@ const Dashboard = () => {
 
   return (
     <div>
-      <h1>LMS Apps</h1>
+      <h1>Current User</h1>
       {user ? (
         <div>
           <p>User ID: {user.id}</p>
+          <p>Name : {user.name}</p>
           <p>Email: {user.email}</p>
-          <p>Email Verified: {user.emailVerified ? 'Yes' : 'No'}</p>
           <p>Image: {user.image}</p>
           <p>Created At: {new Date(user.createdAt).toLocaleString()}</p>
           <p>Updated At: {new Date(user.updatedAt).toLocaleString()}</p>
@@ -91,4 +85,4 @@ const Dashboard = () => {
   )
 }
 
-export default Dashboard
+export default User

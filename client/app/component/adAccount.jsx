@@ -34,6 +34,15 @@ const AdAccount = ({ adAccounts }) => {
     return isActive || isDraft || isCanceled || isPendingDeletion || isRemoved
   })
 
+  // Function to format date to 'YYYY-MM-DD'
+  const formatDate = (date) => {
+    if (!date) return 'N/A' // Return 'N/A' if no date is provided
+    const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
+    return new Date(date)
+      .toLocaleDateString('en-CA', options)
+      .replace(/\//g, '-')
+  }
+
   return (
     <div>
       {/* Checkbox filters */}
@@ -95,6 +104,8 @@ const AdAccount = ({ adAccounts }) => {
               <th>Status</th>
               <th>Currency</th>
               <th>Total Budget</th>
+              <th>Type</th>
+              <th>Created At</th> {/* New header for createdAt */}
             </tr>
           </thead>
           <tbody>
@@ -109,6 +120,9 @@ const AdAccount = ({ adAccounts }) => {
                     ? `${account.totalBudgetAmount}`
                     : 'N/A'}
                 </td>
+                <td>{account.type}</td>
+                <td>{formatDate(account.createdAt)}</td>{' '}
+                {/* Display formatted date */}
               </tr>
             ))}
           </tbody>

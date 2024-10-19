@@ -1,4 +1,6 @@
-// component/DeleteUser.jsx
+// filename: app/component/DeleteUser.jsx
+
+'use client' // Mark this component as a client component
 
 import React from 'react'
 import axios from 'axios'

@@ -1,5 +1,7 @@
 // app/component/NavBar.jsx
 
+'use client' // Mark this component as a client component
+
 import React from 'react'
 import Link from 'next/link'
 
@@ -18,7 +20,7 @@ const NavBar = () => {
           <Link href='/'>Home</Link>
         </li>
         <li style={{ marginRight: '15px' }}>
-          <Link href='/dashboard'>Dashboard</Link>
+          <Link href='/user'>User</Link>
         </li>
         <li style={{ marginRight: '15px' }}>
           <Link href='/adAccount'>Ad Account</Link>

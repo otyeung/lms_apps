@@ -2,8 +2,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from './api/auth/[...nextauth]/route'
 import prisma from './libs/prismadb'
 import { getAdAccounts } from './api/adAccount/route'
-import AdAccount from './component/adAccount'
-import Calendar from './component/calendar'
+import AdAccount from './component/AdAccount'
+import Calendar from './component/Calendar'
 import { redirect } from 'next/navigation' // Import redirect
 
 export default async function Home() {
@@ -52,11 +52,6 @@ export default async function Home() {
   return (
     <section>
       <h1>Report Downloader</h1>
-      <div>
-        <p>
-          <strong>Logged in user :</strong> {user.name}
-        </p>
-      </div>
 
       {userId ? (
         <>

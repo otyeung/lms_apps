@@ -1,4 +1,5 @@
-// filename: app/component/calendar.jsx
+// filename: app/component/Calendar.jsx
+
 'use client' // Mark this component as a client component
 
 import React, { useState, useEffect } from 'react'
