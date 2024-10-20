@@ -5,7 +5,6 @@
 import React, { useState, useEffect } from 'react'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import prisma from '../libs/prismadb'
 
 const Calendar = ({ userId }) => {
   const [startDate, setStartDate] = useState(null)
@@ -66,14 +65,13 @@ const Calendar = ({ userId }) => {
   // Fetch the earliest createdAt date from the AdAccount table for the given userId
   const getEarliestAdAccountDate = async () => {
     try {
-      const earliestAccount = await prisma.adAccount.findFirst({
-        where: { userId },
-        orderBy: { createdAt: 'asc' },
-        select: { createdAt: true },
-      })
-      return earliestAccount?.createdAt
-        ? new Date(earliestAccount.createdAt)
-        : null
+      const response = await fetch(
+        `/api/earliestAdAccountDate?userId=${userId}`
+      )
+      if (!response.ok) throw new Error('Network response was not ok')
+
+      const earliestAccountDate = await response.json()
+      return earliestAccountDate ? new Date(earliestAccountDate) : null
     } catch (error) {
       console.error('Error fetching earliest AdAccount date:', error)
       return null
@@ -126,9 +124,7 @@ const Calendar = ({ userId }) => {
         end = lastQuarter.end
         break
       case 'All Time':
-        console.log('UserId:', userId) // Log the userId
         getEarliestAdAccountDate().then((earliestDate) => {
-          console.log('Earliest Date:', earliestDate) // Log the earliest date
           if (earliestDate) {
             setStartDate(earliestDate)
             setEndDate(getTodayUTC())
@@ -163,7 +159,7 @@ const Calendar = ({ userId }) => {
         )} to ${end.toLocaleDateString('en-US')}`
       )
     }
-  }, [timeRange])
+  }, [timeRange, userId]) // Added userId as a dependency
 
   // Handle date range selection manually
   const handleDateChange = (start, end) => {
@@ -282,9 +278,8 @@ const Calendar = ({ userId }) => {
           selectsStart
           startDate={startDate}
           endDate={endDate}
-          placeholderText='Select start date'
+          placeholderText='Select Start Date'
           isClearable
-          dateFormat='yyyy/MM/dd'
         />
         <DatePicker
           selected={endDate}
@@ -292,14 +287,11 @@ const Calendar = ({ userId }) => {
           selectsEnd
           startDate={startDate}
           endDate={endDate}
-          placeholderText='Select end date'
+          placeholderText='Select End Date'
           isClearable
-          dateFormat='yyyy/MM/dd'
         />
       </div>
-      <div>
-        <p>{selectedRange}</p>
-      </div>
+      <div>{selectedRange && <p>{selectedRange}</p>}</div>
     </div>
   )
 }
