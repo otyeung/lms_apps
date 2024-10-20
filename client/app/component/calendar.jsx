@@ -271,27 +271,35 @@ const Calendar = ({ userId }) => {
           Custom
         </label>
       </div>
-      <div>
-        <DatePicker
-          selected={startDate}
-          onChange={(date) => handleDateChange(date, endDate)}
-          selectsStart
-          startDate={startDate}
-          endDate={endDate}
-          placeholderText='Select Start Date'
-          isClearable
-        />
-        <DatePicker
-          selected={endDate}
-          onChange={(date) => handleDateChange(startDate, date)}
-          selectsEnd
-          startDate={startDate}
-          endDate={endDate}
-          placeholderText='Select End Date'
-          isClearable
-        />
+
+      {/* Show custom date pickers when 'Custom' is selected or start/end dates are set */}
+      {(timeRange === 'Custom' || (startDate && endDate)) && (
+        <div style={{ marginTop: '20px' }}>
+          <h3>Custom Date Range</h3>
+          <div>
+            <label>
+              Start Date:
+              <DatePicker
+                selected={startDate}
+                onChange={(date) => handleDateChange(date, endDate)}
+                dateFormat='yyyy-MM-dd'
+              />
+            </label>
+            <label>
+              End Date:
+              <DatePicker
+                selected={endDate}
+                onChange={(date) => handleDateChange(startDate, date)}
+                dateFormat='yyyy-MM-dd'
+              />
+            </label>
+          </div>
+        </div>
+      )}
+
+      <div style={{ marginTop: '20px' }}>
+        <h3>{selectedRange}</h3>
       </div>
-      <div>{selectedRange && <p>{selectedRange}</p>}</div>
     </div>
   )
 }
