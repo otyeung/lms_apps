@@ -71,7 +71,15 @@ const Calendar = ({ userId }) => {
       if (!response.ok) throw new Error('Network response was not ok')
 
       const earliestAccountDate = await response.json()
-      return earliestAccountDate ? new Date(earliestAccountDate) : null
+
+      // Subtract one day from the earliest account date
+      if (earliestAccountDate) {
+        const date = new Date(earliestAccountDate)
+        date.setUTCDate(date.getUTCDate() - 1) // Subtract 1 day
+        return date
+      } else {
+        return null
+      }
     } catch (error) {
       console.error('Error fetching earliest AdAccount date:', error)
       return null
