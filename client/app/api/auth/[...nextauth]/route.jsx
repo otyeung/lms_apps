@@ -33,16 +33,24 @@ export const authOptions = {
   // Callbacks for handling session
   callbacks: {
     async session({ session, token }) {
-      // Include user ID in the session from the token
+      // Include user ID and access token in the session from the token
       if (token?.sub) {
         session.user.id = token.sub // Assuming token.sub holds the user ID
       }
+      session.user.accessToken = token.accessToken // Include access token in session
+
+      // Log the session object
+      console.log('Current session object:', session)
+
       return session
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       // If a user is present, add their ID to the token
       if (user) {
         token.sub = user.id // Store user ID in the token
+      }
+      if (account) {
+        token.accessToken = account.access_token // Store access token in the token
       }
       return token
     },

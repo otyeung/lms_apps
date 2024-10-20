@@ -1,3 +1,5 @@
+// filename : app/page.js
+
 import { getServerSession } from 'next-auth'
 import { authOptions } from './api/auth/[...nextauth]/route'
 import prisma from './libs/prismadb'
@@ -16,7 +18,7 @@ export default async function Home() {
 
   const account = await prisma.account.findFirst({
     where: {
-      userId: session?.user?.id,
+      userId: session.user.id,
       provider: 'linkedin',
     },
     select: {
@@ -46,7 +48,7 @@ export default async function Home() {
     }
   }
 
-  const user = session?.user || {}
+  const user = session.user || {}
   const userId = account ? account.userId : null // Safely access userId
 
   return (

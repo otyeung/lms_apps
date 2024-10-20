@@ -48,16 +48,20 @@ export async function getAdAccounts(accessToken, linkedInVersion, userId) {
         versionTag: account.version ? account.version.versionTag : null,
         reference: account.reference,
         notifiedOnCreativeApproval: account.notifiedOnCreativeApproval,
-        createdAt: new Date(account.changeAuditStamps?.created?.time),
+        createdAt: new Date(
+          account.changeAuditStamps?.created?.time
+        ).toISOString(), // Explicit UTC
         createdActor: account.changeAuditStamps?.created?.actor || null,
-        lastModifiedAt: new Date(account.changeAuditStamps?.lastModified?.time),
+        lastModifiedAt: new Date(
+          account.changeAuditStamps?.lastModified?.time
+        ).toISOString(), // Explicit UTC
         lastModifiedActor:
           account.changeAuditStamps?.lastModified?.actor || null,
         name: account.name,
         currency: account.currency,
         status: account.status,
         totalBudgetEndsAt: account.totalBudgetEndsAt
-          ? new Date(account.totalBudgetEndsAt)
+          ? new Date(account.totalBudgetEndsAt).toISOString() // Explicit UTC
           : null,
       }))
 

@@ -1,17 +1,63 @@
+// filename : app/component/AdAccount.jsx
+
 'use client' // This file will be a Client Component
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
 
 // AdAccount component to display the ad accounts table
 const AdAccount = ({ adAccounts }) => {
-  // State for checkbox filters
+  // State for checkbox filters (status, type, and serving statuses)
   const [filters, setFilters] = useState({
     DRAFT: false,
     CANCELED: false,
     PENDING_DELETION: false,
     REMOVED: false,
     ACTIVE: true, // By default, ACTIVE is checked
+    BUSINESS: true, // By default, BUSINESS is checked
+    ENTERPRISE: true, // By default, ENTERPRISE is checked
+    // Serving statuses
+    RUNNABLE: true, // By default, RUNNABLE is checked
+    STOPPED: true,
+    BILLING_HOLD: true,
+    ACCOUNT_TOTAL_BUDGET_HOLD: true,
+    ACCOUNT_END_DATE_HOLD: true,
+    RESTRICTED_HOLD: true,
+    INTERNAL_HOLD: true,
   })
+
+  // State to hold organizations and loading status
+  const [organizations, setOrganizations] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchOrganizations = async () => {
+      try {
+        if (Array.isArray(adAccounts) && adAccounts.length > 0) {
+          // Extract organization IDs from ad accounts
+          const organizationIds = adAccounts.map((account) =>
+            account.reference
+              .replace('urn:li:organization:', '')
+              .replace('urn:li:organizationBrand:', '')
+          )
+          console.log('Organization IDs being sent:', organizationIds) // Add this
+
+          const response = await axios.post('/api/organization', {
+            organizationIds,
+          })
+          console.log('Response from API:', response.data) // Log the response
+          setOrganizations(response.data)
+        } else {
+          console.warn('adAccounts is not an array or is empty')
+        }
+      } catch (error) {
+        console.error('Error fetching organizations:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchOrganizations()
+  }, [adAccounts])
 
   // Function to handle checkbox changes
   const handleCheckboxChange = (event) => {
@@ -22,8 +68,9 @@ const AdAccount = ({ adAccounts }) => {
     }))
   }
 
-  // Filter ad accounts based on the selected statuses
+  // Filter ad accounts based on the selected statuses, types, and serving statuses
   const filteredAdAccounts = adAccounts.filter((account) => {
+    // Status-based filters
     const isActive = filters.ACTIVE && account.status === 'ACTIVE'
     const isDraft = filters.DRAFT && account.status === 'DRAFT'
     const isCanceled = filters.CANCELED && account.status === 'CANCELED'
@@ -31,21 +78,53 @@ const AdAccount = ({ adAccounts }) => {
       filters.PENDING_DELETION && account.status === 'PENDING_DELETION'
     const isRemoved = filters.REMOVED && account.status === 'REMOVED'
 
-    return isActive || isDraft || isCanceled || isPendingDeletion || isRemoved
+    // Type-based filters
+    const isBusiness = filters.BUSINESS && account.type === 'BUSINESS'
+    const isEnterprise = filters.ENTERPRISE && account.type === 'ENTERPRISE'
+
+    // Serving status-based filters (checks if any of the account's servingStatuses match the selected filters)
+    const hasSelectedServingStatus = account.servingStatuses.some(
+      (status) => filters[status]
+    )
+
+    // Return accounts that match both status, type, and servingStatuses filters
+    return (
+      (isActive || isDraft || isCanceled || isPendingDeletion || isRemoved) &&
+      (isBusiness || isEnterprise) &&
+      hasSelectedServingStatus
+    )
   })
 
-  // Function to format date to 'YYYY-MM-DD'
+  // Function to format date to 'YYYY-MM-DD' in UTC
   const formatDate = (date) => {
     if (!date) return 'N/A' // Return 'N/A' if no date is provided
-    const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
-    return new Date(date)
-      .toLocaleDateString('en-CA', options)
-      .replace(/\//g, '-')
+    return new Date(date).toISOString().slice(0, 10) // Ensure UTC date format
+  }
+
+  // Function to format the servingStatuses array into a comma-separated string
+  const formatServingStatuses = (statuses) => {
+    if (!statuses || statuses.length === 0) return 'N/A'
+    return statuses.join(', ')
+  }
+
+  // Helper function to get the organization name by ID
+  const getOrganizationName = (orgId) => {
+    if (!orgId) return 'N/A' // Handle empty orgId case
+    const organization = organizations.find(
+      (org) => org.organizationId === orgId
+    )
+    console.log(
+      'Matching orgId:',
+      orgId,
+      'with organizationId:',
+      organization?.organizationId
+    ) // Add this
+    return organization ? organization.localizedName : 'N/A'
   }
 
   return (
     <div>
-      {/* Checkbox filters */}
+      {/* Checkbox filters for status */}
       <div>
         <label>
           <input
@@ -94,8 +173,99 @@ const AdAccount = ({ adAccounts }) => {
         </label>
       </div>
 
+      {/* Checkbox filters for type */}
+      <div>
+        <label>
+          <input
+            type='checkbox'
+            name='BUSINESS'
+            checked={filters.BUSINESS}
+            onChange={handleCheckboxChange}
+          />
+          BUSINESS
+        </label>
+        <label>
+          <input
+            type='checkbox'
+            name='ENTERPRISE'
+            checked={filters.ENTERPRISE}
+            onChange={handleCheckboxChange}
+          />
+          ENTERPRISE
+        </label>
+      </div>
+
+      {/* Checkbox filters for serving statuses */}
+      <div>
+        <label>
+          <input
+            type='checkbox'
+            name='RUNNABLE'
+            checked={filters.RUNNABLE}
+            onChange={handleCheckboxChange}
+          />
+          RUNNABLE
+        </label>
+        <label>
+          <input
+            type='checkbox'
+            name='STOPPED'
+            checked={filters.STOPPED}
+            onChange={handleCheckboxChange}
+          />
+          STOPPED
+        </label>
+        <label>
+          <input
+            type='checkbox'
+            name='BILLING_HOLD'
+            checked={filters.BILLING_HOLD}
+            onChange={handleCheckboxChange}
+          />
+          BILLING HOLD
+        </label>
+        <label>
+          <input
+            type='checkbox'
+            name='ACCOUNT_TOTAL_BUDGET_HOLD'
+            checked={filters.ACCOUNT_TOTAL_BUDGET_HOLD}
+            onChange={handleCheckboxChange}
+          />
+          ACCOUNT TOTAL BUDGET HOLD
+        </label>
+        <label>
+          <input
+            type='checkbox'
+            name='ACCOUNT_END_DATE_HOLD'
+            checked={filters.ACCOUNT_END_DATE_HOLD}
+            onChange={handleCheckboxChange}
+          />
+          ACCOUNT END DATE HOLD
+        </label>
+        <label>
+          <input
+            type='checkbox'
+            name='RESTRICTED_HOLD'
+            checked={filters.RESTRICTED_HOLD}
+            onChange={handleCheckboxChange}
+          />
+          RESTRICTED HOLD
+        </label>
+        <label>
+          <input
+            type='checkbox'
+            name='INTERNAL_HOLD'
+            checked={filters.INTERNAL_HOLD}
+            onChange={handleCheckboxChange}
+          />
+          INTERNAL HOLD
+        </label>
+      </div>
+
       {/* Render the filtered ad accounts table */}
-      {filteredAdAccounts.length > 0 ? (
+      {loading ? (
+        <p>Loading organizations...</p>
+      ) : filteredAdAccounts.length > 0 ? (
         <table>
           <thead>
             <tr>
@@ -105,7 +275,9 @@ const AdAccount = ({ adAccounts }) => {
               <th>Currency</th>
               <th>Total Budget</th>
               <th>Type</th>
-              <th>Created At</th> {/* New header for createdAt */}
+              <th>Serving Statuses</th>
+              <th>Created At</th>
+              <th>Organization</th> {/* New header for Organization */}
             </tr>
           </thead>
           <tbody>
@@ -121,14 +293,22 @@ const AdAccount = ({ adAccounts }) => {
                     : 'N/A'}
                 </td>
                 <td>{account.type}</td>
-                <td>{formatDate(account.createdAt)}</td>{' '}
-                {/* Display formatted date */}
+                <td>{formatServingStatuses(account.servingStatuses)}</td>
+                <td>{formatDate(account.createdAt)}</td>
+                <td>
+                  {getOrganizationName(
+                    account.reference
+                      .replace('urn:li:organization:', '')
+                      .replace('urn:li:organizationBrand:', '')
+                  )}
+                </td>{' '}
+                {/* Display localizedName */}
               </tr>
             ))}
           </tbody>
         </table>
       ) : (
-        <p>No LinkedIn ad accounts found.</p>
+        <p>No ad accounts found for the selected filters.</p>
       )}
     </div>
   )

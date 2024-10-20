@@ -1,4 +1,3 @@
-// Prisma schema file
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,65 +9,138 @@ datasource db {
 
 // AdAccount model
 model AdAccount {
-  id                           String   @id @default(auto()) @map("_id") @db.ObjectId // MongoDB's _id
-  adAccountId                 String   @map("adAccountId") @unique // Map to LinkedIn's ad account id
-  userId                      String   @db.ObjectId // Reference to User model (not nullable)
-  test                        Boolean? // Optional field
-  totalBudgetCurrencyCode     String?  // Optional field
-  totalBudgetAmount           Float?   // Optional field
+  id                           String    @id @default(auto()) @map("_id") @db.ObjectId
+  adAccountId                  String    @unique @map("adAccountId")
+  userId                       String    @db.ObjectId
+  test                         Boolean?
+  totalBudgetCurrencyCode      String?
+  totalBudgetAmount            Float?
   notifiedOnCreativeRejection  Boolean
   notifiedOnNewFeaturesEnabled Boolean
-  notifiedOnEndOfCampaign     Boolean
-  servingStatuses             String[]
-  type                        String
-  versionTag                  String?
-  reference                   String
+  notifiedOnEndOfCampaign      Boolean
+  servingStatuses              String[]
+  type                         String
+  versionTag                   String?
+  reference                    String
   notifiedOnCreativeApproval   Boolean
-  createdAt                   DateTime @default(now())
-  createdActor                String
-  lastModifiedAt              DateTime @updatedAt
-  lastModifiedActor           String
-  name                        String
-  currency                    String
-  status                      String
-  totalBudgetEndsAt           DateTime?
+  createdAt                    DateTime  @default(now())
+  createdActor                 String
+  lastModifiedAt               DateTime  @updatedAt
+  lastModifiedActor            String
+  name                         String
+  currency                     String
+  status                       String
+  totalBudgetEndsAt            DateTime?
 
-  user                        User      @relation("UserAdAccounts", fields: [userId], references: [id], onDelete: Cascade) // Reference to User model with cascading delete
+  user User @relation("UserAdAccounts", fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // User model
 model User {
-  id                          String     @id @default(auto()) @map("_id") @db.ObjectId
-  name                        String?
-  email                       String?    @unique
-  emailVerified               DateTime?
-  image                       String?
-  hashedPassword              String?
-  createdAt                   DateTime   @default(now())
-  updatedAt                   DateTime   @updatedAt
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  hashedPassword String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  accounts                    Account[]  @relation("UserAccounts") // Define the relation with Account
-  adAccounts                  AdAccount[] @relation("UserAdAccounts") // Define the relation with AdAccount
+  accounts      Account[]          @relation("UserAccounts")
+  adAccounts    AdAccount[]        @relation("UserAdAccounts")
+  organizations UserOrganization[]
 }
 
 // Account model
 model Account {
-  id                          String     @id @default(auto()) @map("_id") @db.ObjectId
-  userId                      String     @db.ObjectId
-  type                        String
-  provider                    String
-  providerAccountId           String
-  refresh_token               String?    @db.String
-  access_token                String?    @db.String
-  expires_at                  Int?
-  refresh_token_expires_in    Int?
-  token_type                  String?
-  scope                       String?
-  id_token                    String?    @db.String
-  session_state               String?
+  id                       String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId                   String  @db.ObjectId
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String?
+  access_token             String?
+  expires_at               Int?
+  refresh_token_expires_in Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String? @db.String
+  session_state            String?
 
-  // Define relation to User with cascading delete
-  user                        User       @relation("UserAccounts", fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation("UserAccounts", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+}
+
+// Organization model
+// Organization model
+model Organization {
+  id                      String     @id @default(auto()) @map("_id") @db.ObjectId
+  organizationId          String     @unique               // Added unique organizationId field
+  localizedName           String
+  name                    Json
+  primaryOrganizationType String
+  locations               Location[]
+  localizedWebsite        String?
+  logoV2                  Logo?      @relation("OrganizationLogo", fields: [logoV2Id], references: [id]) // Unique relation name
+  logoV2Id                String?    @db.ObjectId
+  createdAt               DateTime   @default(now())
+  updatedAt               DateTime   @updatedAt
+  lastModifiedAt          DateTime?  @updatedAt             // Ensure this field is defined here
+
+  // New fields added
+  foundedYear             Int?       // Year the organization was founded
+  headquarters            String?    // Headquarters location
+  websiteUrl              String?    // Website URL
+  employeeCountRange      Int?       // Range of employee count
+  specialties             String[]    // List of specialties
+
+  users UserOrganization[]
+}
+
+// UserOrganization join model for many-to-many relationship
+model UserOrganization {
+  id             String @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String @db.ObjectId
+  organizationId String @db.ObjectId
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+// Location model
+model Location {
+  id              String  @id @default(auto()) @map("_id") @db.ObjectId
+  organizationId  String  @db.ObjectId
+  locationType    String
+  address         Address @relation("LocationAddress", fields: [addressId], references: [id])
+  addressId       String  @db.ObjectId
+  staffCountRange String
+  geoLocation     String?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+// Address model
+model Address {
+  id             String  @id @default(auto()) @map("_id") @db.ObjectId
+  geographicArea String
+  country        String
+  city           String
+  line1          String
+  line2          String?
+  postalCode     String
+
+  locations Location[] @relation("LocationAddress") // Updated relation name to match
+}
+
+// Logo model
+model Logo {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  cropped  String?
+  original String?
+  cropInfo Json?
+
+  organizations  Organization[] @relation("OrganizationLogo") // Ensure the relation name matches
+  organizationId String         @db.ObjectId
 }

@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import prisma from '../libs/prismadb' // Assuming you have access to the Prisma client in this component
+import prisma from '../libs/prismadb'
 
 const Calendar = ({ userId }) => {
   const [startDate, setStartDate] = useState(null)
