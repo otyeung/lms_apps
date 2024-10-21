@@ -2,7 +2,7 @@
 
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import axios from 'axios'
 
 // AdAccount component to display the ad accounts table
@@ -72,31 +72,33 @@ const AdAccount = ({ adAccounts }) => {
   }
 
   // Filter ad accounts based on the selected statuses, types, and serving statuses
-  const filteredAdAccounts = adAccounts.filter((account) => {
-    // Status-based filters
-    const isActive = filters.ACTIVE && account.status === 'ACTIVE'
-    const isDraft = filters.DRAFT && account.status === 'DRAFT'
-    const isCanceled = filters.CANCELED && account.status === 'CANCELED'
-    const isPendingDeletion =
-      filters.PENDING_DELETION && account.status === 'PENDING_DELETION'
-    const isRemoved = filters.REMOVED && account.status === 'REMOVED'
+  const filteredAdAccounts = useMemo(() => {
+    return adAccounts.filter((account) => {
+      // Status-based filters
+      const isActive = filters.ACTIVE && account.status === 'ACTIVE'
+      const isDraft = filters.DRAFT && account.status === 'DRAFT'
+      const isCanceled = filters.CANCELED && account.status === 'CANCELED'
+      const isPendingDeletion =
+        filters.PENDING_DELETION && account.status === 'PENDING_DELETION'
+      const isRemoved = filters.REMOVED && account.status === 'REMOVED'
 
-    // Type-based filters
-    const isBusiness = filters.BUSINESS && account.type === 'BUSINESS'
-    const isEnterprise = filters.ENTERPRISE && account.type === 'ENTERPRISE'
+      // Type-based filters
+      const isBusiness = filters.BUSINESS && account.type === 'BUSINESS'
+      const isEnterprise = filters.ENTERPRISE && account.type === 'ENTERPRISE'
 
-    // Serving status-based filters (checks if any of the account's servingStatuses match the selected filters)
-    const hasSelectedServingStatus = account.servingStatuses.some(
-      (status) => filters[status]
-    )
+      // Serving status-based filters (checks if any of the account's servingStatuses match the selected filters)
+      const hasSelectedServingStatus = account.servingStatuses.some(
+        (status) => filters[status]
+      )
 
-    // Return accounts that match both status, type, and servingStatuses filters
-    return (
-      (isActive || isDraft || isCanceled || isPendingDeletion || isRemoved) &&
-      (isBusiness || isEnterprise) &&
-      hasSelectedServingStatus
-    )
-  })
+      // Return accounts that match both status, type, and servingStatuses filters
+      return (
+        (isActive || isDraft || isCanceled || isPendingDeletion || isRemoved) &&
+        (isBusiness || isEnterprise) &&
+        hasSelectedServingStatus
+      )
+    })
+  }, [adAccounts, filters])
 
   // Function to format date to 'YYYY-MM-DD' in UTC
   const formatDate = (date) => {
@@ -128,142 +130,65 @@ const AdAccount = ({ adAccounts }) => {
   return (
     <div>
       {/* Checkbox filters for status */}
-      <div>
-        <label>
-          <input
-            type='checkbox'
-            name='ACTIVE'
-            checked={filters.ACTIVE}
-            onChange={handleCheckboxChange}
-          />
-          ACTIVE
-        </label>
-        <label>
-          <input
-            type='checkbox'
-            name='DRAFT'
-            checked={filters.DRAFT}
-            onChange={handleCheckboxChange}
-          />
-          DRAFT
-        </label>
-        <label>
-          <input
-            type='checkbox'
-            name='CANCELED'
-            checked={filters.CANCELED}
-            onChange={handleCheckboxChange}
-          />
-          CANCELED
-        </label>
-        <label>
-          <input
-            type='checkbox'
-            name='PENDING_DELETION'
-            checked={filters.PENDING_DELETION}
-            onChange={handleCheckboxChange}
-          />
-          PENDING DELETION
-        </label>
-        <label>
-          <input
-            type='checkbox'
-            name='REMOVED'
-            checked={filters.REMOVED}
-            onChange={handleCheckboxChange}
-          />
-          REMOVED
-        </label>
-      </div>
+      <fieldset>
+        <legend>Status Filters</legend>
+        {['ACTIVE', 'DRAFT', 'CANCELED', 'PENDING_DELETION', 'REMOVED'].map(
+          (status) => (
+            <label key={status} htmlFor={status}>
+              <input
+                type='checkbox'
+                id={status}
+                name={status}
+                checked={filters[status]}
+                onChange={handleCheckboxChange}
+              />
+              {status.replace('_', ' ')}
+            </label>
+          )
+        )}
+      </fieldset>
 
       {/* Checkbox filters for type */}
-      <div>
-        <label>
-          <input
-            type='checkbox'
-            name='BUSINESS'
-            checked={filters.BUSINESS}
-            onChange={handleCheckboxChange}
-          />
-          BUSINESS
-        </label>
-        <label>
-          <input
-            type='checkbox'
-            name='ENTERPRISE'
-            checked={filters.ENTERPRISE}
-            onChange={handleCheckboxChange}
-          />
-          ENTERPRISE
-        </label>
-      </div>
+      <fieldset>
+        <legend>Type Filters</legend>
+        {['BUSINESS', 'ENTERPRISE'].map((type) => (
+          <label key={type} htmlFor={type}>
+            <input
+              type='checkbox'
+              id={type}
+              name={type}
+              checked={filters[type]}
+              onChange={handleCheckboxChange}
+            />
+            {type}
+          </label>
+        ))}
+      </fieldset>
 
       {/* Checkbox filters for serving statuses */}
-      <div>
-        <label>
-          <input
-            type='checkbox'
-            name='RUNNABLE'
-            checked={filters.RUNNABLE}
-            onChange={handleCheckboxChange}
-          />
-          RUNNABLE
-        </label>
-        <label>
-          <input
-            type='checkbox'
-            name='STOPPED'
-            checked={filters.STOPPED}
-            onChange={handleCheckboxChange}
-          />
-          STOPPED
-        </label>
-        <label>
-          <input
-            type='checkbox'
-            name='BILLING_HOLD'
-            checked={filters.BILLING_HOLD}
-            onChange={handleCheckboxChange}
-          />
-          BILLING HOLD
-        </label>
-        <label>
-          <input
-            type='checkbox'
-            name='ACCOUNT_TOTAL_BUDGET_HOLD'
-            checked={filters.ACCOUNT_TOTAL_BUDGET_HOLD}
-            onChange={handleCheckboxChange}
-          />
-          ACCOUNT TOTAL BUDGET HOLD
-        </label>
-        <label>
-          <input
-            type='checkbox'
-            name='ACCOUNT_END_DATE_HOLD'
-            checked={filters.ACCOUNT_END_DATE_HOLD}
-            onChange={handleCheckboxChange}
-          />
-          ACCOUNT END DATE HOLD
-        </label>
-        <label>
-          <input
-            type='checkbox'
-            name='RESTRICTED_HOLD'
-            checked={filters.RESTRICTED_HOLD}
-            onChange={handleCheckboxChange}
-          />
-          RESTRICTED HOLD
-        </label>
-        <label>
-          <input
-            type='checkbox'
-            name='INTERNAL_HOLD'
-            checked={filters.INTERNAL_HOLD}
-            onChange={handleCheckboxChange}
-          />
-          INTERNAL HOLD
-        </label>
-      </div>
+      <fieldset>
+        <legend>Serving Status Filters</legend>
+        {[
+          'RUNNABLE',
+          'STOPPED',
+          'BILLING_HOLD',
+          'ACCOUNT_TOTAL_BUDGET_HOLD',
+          'ACCOUNT_END_DATE_HOLD',
+          'RESTRICTED_HOLD',
+          'INTERNAL_HOLD',
+        ].map((status) => (
+          <label key={status} htmlFor={status}>
+            <input
+              type='checkbox'
+              id={status}
+              name={status}
+              checked={filters[status]}
+              onChange={handleCheckboxChange}
+            />
+            {status.replace('_', ' ')}
+          </label>
+        ))}
+      </fieldset>
 
       {/* Render the filtered ad accounts table */}
       {loading ? (
@@ -303,8 +228,7 @@ const AdAccount = ({ adAccounts }) => {
                       ''
                     )
                   )}
-                </td>{' '}
-                {/* Call the organization name retrieval */}
+                </td>
               </tr>
             ))}
           </tbody>
