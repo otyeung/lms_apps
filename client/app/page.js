@@ -62,7 +62,7 @@ export default async function Home() {
         <p>No account linked. Please connect your LinkedIn account.</p>
       )}
 
-      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+      {errorMessage && <p className='error-message'>{errorMessage}</p>}
     </section>
   )
 }

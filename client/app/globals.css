@@ -4,6 +4,15 @@
 
 /* Your custom global styles can go below this line */
 
+.error-message {
+  color: red;
+}
+
+.profile-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+}
 nav {
   background-color: #f0f0f0;
 }
@@ -24,26 +33,6 @@ nav {
 
 .active {
   @apply font-bold underline; /* Use Tailwind's utility classes */
-}
-
-/* Styling for the logout button */
-.logout-button {
-  background-color: #ef4444; /* Tailwind Red-500 */
-  color: white;
-  padding: 0.5rem 1rem; /* Tailwind px-4 py-2 */
-  margin-top: 1rem; /* Tailwind mt-4 */
-  border-radius: 0.375rem; /* Tailwind rounded-md */
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.logout-button:disabled {
-  background-color: #fca5a5; /* Lighter red when disabled */
-  cursor: not-allowed;
-}
-
-.logout-button:hover:not(:disabled) {
-  background-color: #dc2626; /* Darker red on hover */
 }
 
 /* Styling for the login container */
@@ -93,4 +82,61 @@ nav {
 
 .login-button:hover {
   background-color: #2563eb; /* Darker blue on hover */
+}
+
+.profile-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.toggle-button {
+  margin-left: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.toggle-button:hover {
+  background-color: #0056b3;
+}
+
+/* globals.css */
+
+/* Style for the Scope section */
+.scope {
+  font-family: Arial, sans-serif; /* Change to your preferred font */
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #ccc; /* Light border for the scope box */
+  border-radius: 5px; /* Rounded corners */
+  background-color: #f9f9f9; /* Light background color */
+}
+
+/* globals.css */
+
+/* Styling for DeleteUser button */
+.delete-button {
+  background-color: #0073b1; /* LinkedIn blue color */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.delete-button:hover {
+  background-color: #005582; /* Darker shade for hover effect */
+}
+
+.delete-button:disabled {
+  background-color: #ccc; /* Gray color when disabled */
+  cursor: not-allowed;
 }

@@ -2,25 +2,49 @@
 
 'use client'
 
-import React from 'react'
+import { useState } from 'react'
+import { signOut } from 'next-auth/react'
 import axios from 'axios'
 
-const DeleteUser = ({ userId, onDeleteSuccess }) => {
-  const handleDelete = async () => {
-    try {
-      const response = await axios.delete('/api/deleteUser', {
-        data: { userId }, // Axios requires the body data to be passed in the `data` key for DELETE requests
-      })
+const DeleteUser = ({ userId }) => {
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
-      console.log(response.data.message) // Success message
-      onDeleteSuccess() // Callback for successful deletion
+  const handleDeleteUser = async () => {
+    if (!userId) {
+      setErrorMessage('User not found.')
+      return
+    }
+
+    setIsDeleting(true)
+    setErrorMessage('')
+
+    try {
+      await axios.delete('/api/deleteUser', {
+        data: { userId },
+      })
+      signOut() // Sign out after successful deletion
     } catch (error) {
-      console.error('Error deleting user:', error)
-      // Handle the error as needed, e.g., set error state
+      setErrorMessage(
+        `Error deleting user: ${error.response?.data || error.message}`
+      )
+    } finally {
+      setIsDeleting(false)
     }
   }
 
-  return <button onClick={handleDelete}>Delete Account</button>
+  return (
+    <div>
+      <button
+        className='delete-button'
+        onClick={handleDeleteUser}
+        disabled={isDeleting}
+      >
+        {isDeleting ? 'Deleting...' : 'Clear Caches'}
+      </button>
+      {errorMessage && <p className='error-message'>{errorMessage}</p>}
+    </div>
+  )
 }
 
 export default DeleteUser

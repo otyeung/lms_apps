@@ -1,88 +1,62 @@
-// filename : app/(site)/user/page.jsx
+// filename: app/(site)/user/page.jsx
 
-'use client'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '../../api/auth/[...nextauth]/route'
+import prisma from '../../libs/prismadb'
+import { redirect } from 'next/navigation'
+import DeleteUser from '../../component/DeleteUser' // Client-side component
+import AccountDetailsClient from './AccountDetailsClient' // Client-side component
 
-import { useSession, signOut } from 'next-auth/react'
-import { useState, useEffect } from 'react'
-import axios from 'axios' // Import axios
-import DeleteUser from '../../component/DeleteUser' // Adjust the path as necessary
+export default async function User() {
+  const session = await getServerSession(authOptions)
 
-const User = () => {
-  const { data: session } = useSession()
-  const [user, setUser] = useState(null)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (!session?.user?.id) return
-
-      try {
-        const response = await axios.get(`/api/checkUser`, {
-          params: { id: session.user.id },
-        })
-
-        setUser(response.data)
-      } catch (error) {
-        setErrorMessage(
-          `Error fetching user data: ${error.response?.data || error.message}`
-        )
-      }
-    }
-
-    fetchUserData()
-  }, [session])
-
-  const handleDeleteUser = async () => {
-    const userId = session?.user?.id
-
-    if (!userId) {
-      setErrorMessage('User not found.')
-      return
-    }
-
-    setIsDeleting(true)
-    setErrorMessage('')
-
-    try {
-      const response = await axios.delete('/api/deleteUser', {
-        data: { userId }, // Pass userId in the body for DELETE request
-      })
-
-      console.log(response.data)
-      signOut() // Sign out after successful deletion
-    } catch (error) {
-      setErrorMessage(
-        `Error deleting user: ${error.response?.data || error.message}`
-      )
-    } finally {
-      setIsDeleting(false)
-    }
+  if (!session) {
+    // Redirect to the login page if there's no session
+    return redirect('/login')
   }
+
+  // Fetch the user data directly from the database
+  const user = await prisma.user.findUnique({
+    where: {
+      id: session.user.id,
+    },
+    include: {
+      accounts: true, // Include accounts in the fetched user
+    },
+  })
+
+  if (!user) {
+    return <p>User not found.</p>
+  }
+
+  const account = user.accounts[0] // Assuming the user has only one account linked
 
   return (
     <div>
-      <h1>Current User</h1>
       {user ? (
         <div>
-          <p>User ID: {user.id}</p>
-          <p>Name : {user.name}</p>
-          <p>Email: {user.email}</p>
-          <p>Image: {user.image}</p>
-          <p>Created At: {new Date(user.createdAt).toLocaleString()}</p>
-          <p>Updated At: {new Date(user.updatedAt).toLocaleString()}</p>
+          <p>Welcome! {user.name}</p>
+          {user.image ? (
+            <img
+              src={user.image}
+              alt='User profile'
+              className='profile-image'
+            />
+          ) : (
+            <p>No profile image available</p>
+          )}
+
+          {/* Display account information */}
+          {account ? (
+            <AccountDetailsClient account={account} /> // Use Client Component
+          ) : (
+            <p>No account information available.</p>
+          )}
         </div>
       ) : (
         <p>Loading user data...</p>
       )}
-      <button onClick={() => signOut()}>Sign Out</button>
-      <DeleteUser
-        userId={session?.user?.id}
-        onDeleteSuccess={() => signOut()}
-      />
-      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+      <DeleteUser userId={user.id} /> {/* Passing only userId */}
     </div>
   )
 }
-
-export default User

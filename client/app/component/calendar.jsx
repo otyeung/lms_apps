@@ -188,7 +188,6 @@ const Calendar = ({ userId }) => {
 
   return (
     <div className='calendar-container' style={{ padding: '20px' }}>
-      <h2>Date Range</h2>
       <div>
         <label>
           <input
@@ -283,7 +282,6 @@ const Calendar = ({ userId }) => {
       {/* Show custom date pickers when 'Custom' is selected or start/end dates are set */}
       {(timeRange === 'Custom' || (startDate && endDate)) && (
         <div style={{ marginTop: '20px' }}>
-          <h3>Custom Date Range</h3>
           <div>
             <label>
               Start Date:
