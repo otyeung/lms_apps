@@ -65,25 +65,35 @@ export async function getOrganizations(
       }
     })
 
-    // Upsert logic
-    const upsertPromises = organizations.map((org) => {
-      return prisma.organization.upsert({
+    // Separate organizations into create and update batches
+    const existingOrganizations = await prisma.organization.findMany({
+      where: {
+        organizationId: { in: organizations.map((org) => org.organizationId) },
+      },
+    })
+
+    const existingOrgIds = new Set(
+      existingOrganizations.map((org) => org.organizationId)
+    )
+
+    const createOrganizations = organizations.filter(
+      (org) => !existingOrgIds.has(org.organizationId)
+    )
+    const updateOrganizations = organizations.filter((org) =>
+      existingOrgIds.has(org.organizationId)
+    )
+
+    // Perform batch create if there are organizations to create
+    if (createOrganizations.length > 0) {
+      await prisma.organization.createMany({
+        data: createOrganizations,
+      })
+    }
+
+    const updatePromises = updateOrganizations.map((org) => {
+      return prisma.organization.update({
         where: { organizationId: org.organizationId },
-        create: {
-          organizationId: org.organizationId,
-          name: org.name,
-          localizedName: org.localizedName,
-          foundedYear: org.foundedYear,
-          headquarters: org.headquarters,
-          websiteUrl: org.websiteUrl,
-          employeeCountRange: org.employeeCountRange,
-          specialties: org.specialties,
-          primaryOrganizationType: org.primaryOrganizationType,
-          createdAt: org.createdAt,
-          lastModifiedAt: org.lastModifiedAt,
-          userId: org.userId, // Set userId here
-        },
-        update: {
+        data: {
           name: org.name,
           localizedName: org.localizedName,
           foundedYear: org.foundedYear,
@@ -93,13 +103,13 @@ export async function getOrganizations(
           specialties: org.specialties,
           primaryOrganizationType: org.primaryOrganizationType,
           lastModifiedAt: org.lastModifiedAt,
-          userId: org.userId, // Set userId here
+          userId: org.userId, // Ensure userId is updated
         },
       })
     })
 
-    // Await all upserts to complete
-    await Promise.all(upsertPromises)
+    // Await all updates to complete
+    await Promise.all(updatePromises)
 
     return organizations // Return the organizations after upsert
   } catch (error) {

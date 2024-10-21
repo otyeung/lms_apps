@@ -7,7 +7,6 @@ import { getAdAccounts } from './api/adAccount/route'
 import AdAccount from './component/AdAccount'
 import Calendar from './component/Calendar'
 import { redirect } from 'next/navigation'
-import LogoutButton from './component/LogoutButton' // Import the LogoutButton client component
 
 export default async function Home() {
   const session = await getServerSession(authOptions)
@@ -64,9 +63,6 @@ export default async function Home() {
       )}
 
       {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-
-      {/* Render the LogoutButton */}
-      <LogoutButton />
     </section>
   )
 }

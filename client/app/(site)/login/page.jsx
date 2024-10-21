@@ -25,10 +25,6 @@ export default function Login() {
 
   return (
     <div className='login-container'>
-      <div className='login-header'>
-        <h2 className='login-title'>Sign in with LinkedIn</h2>
-      </div>
-
       <div className='login-button-container'>
         <button
           onClick={() => signIn('linkedin')} // Trigger LinkedIn login
