@@ -1,57 +1,42 @@
-// filename : app/(site)/login/route.jsx
+// filename: app/(site)/login/page.jsx
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { signIn, useSession } from 'next-auth/react'
-import { toast } from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 
 export default function Login() {
-  const session = useSession()
+  const { data: session, status } = useSession() // Destructure session and status
   const router = useRouter()
-  const [data, setData] = useState({
-    email: '',
-    password: '',
-  })
 
-  // protecting the page, allowing only unauthenticated users
+  // Effect to handle redirection when the session is authenticated or unauthenticated
   useEffect(() => {
-    if (session?.status === 'authenticated') {
+    if (status === 'authenticated') {
+      // If authenticated, redirect to the homepage
       router.push('/')
     }
-  })
+  }, [status, router])
 
-  const loginUser = async (e) => {
-    e.preventDefault()
-    signIn('credentials', { ...data, redirect: false }).then((callback) => {
-      if (callback?.error) {
-        toast.error(callback.error)
-      }
-
-      if (callback?.ok && !callback?.error) {
-        toast.success('Logged in successfully!')
-      }
-    })
+  // If session status is still loading, show a loading state
+  if (status === 'loading') {
+    return <p>Loading...</p> // Display a simple loading message during session loading
   }
-  return (
-    <>
-      <div className='flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8'>
-        <div className='sm:mx-auto sm:w-full sm:max-w-sm'>
-          <h2 className='mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900'>
-            Sign in with LinkedIn profile
-          </h2>
-        </div>
 
-        <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-sm'>
-          <button
-            onClick={() => signIn('linkedin')}
-            className='bg-blue-500 text-white w-full'
-          >
-            Sign In
-          </button>
-        </div>
+  return (
+    <div className='login-container'>
+      <div className='login-header'>
+        <h2 className='login-title'>Sign in with LinkedIn</h2>
       </div>
-    </>
+
+      <div className='login-button-container'>
+        <button
+          onClick={() => signIn('linkedin')} // Trigger LinkedIn login
+          className='login-button'
+        >
+          Sign In with LinkedIn
+        </button>
+      </div>
+    </div>
   )
 }

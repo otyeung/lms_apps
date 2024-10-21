@@ -1,4 +1,4 @@
-// filename : app/page.js
+// filename: app/page.js
 
 import { getServerSession } from 'next-auth'
 import { authOptions } from './api/auth/[...nextauth]/route'
@@ -7,13 +7,15 @@ import { getAdAccounts } from './api/adAccount/route'
 import AdAccount from './component/AdAccount'
 import Calendar from './component/Calendar'
 import { redirect } from 'next/navigation'
+import LogoutButton from './component/LogoutButton' // Import the LogoutButton client component
 
 export default async function Home() {
   const session = await getServerSession(authOptions)
+  console.log('Session:', session) // Debugging output
 
   if (!session) {
     // Redirect to the login page if there's no session
-    redirect('/login')
+    return redirect('/login')
   }
 
   const account = await prisma.account.findFirst({
@@ -48,8 +50,7 @@ export default async function Home() {
     }
   }
 
-  const user = session.user || {}
-  const userId = account ? account.userId : null // Safely access userId
+  const userId = account ? account.userId : null
 
   return (
     <section>
@@ -63,6 +64,9 @@ export default async function Home() {
       )}
 
       {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+
+      {/* Render the LogoutButton */}
+      <LogoutButton />
     </section>
   )
 }

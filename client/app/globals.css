@@ -1,3 +1,96 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Your custom global styles can go below this line */
+
+nav {
+  background-color: #f0f0f0;
+}
+
+.nav {
+  display: flex;
+  list-style: none;
+  padding: 10px;
+}
+
+.navItem {
+  margin-right: 15px;
+}
+
+.navItem a {
+  @apply text-gray-800 no-underline; /* Use Tailwind's utility classes */
+}
+
+.active {
+  @apply font-bold underline; /* Use Tailwind's utility classes */
+}
+
+/* Styling for the logout button */
+.logout-button {
+  background-color: #ef4444; /* Tailwind Red-500 */
+  color: white;
+  padding: 0.5rem 1rem; /* Tailwind px-4 py-2 */
+  margin-top: 1rem; /* Tailwind mt-4 */
+  border-radius: 0.375rem; /* Tailwind rounded-md */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.logout-button:disabled {
+  background-color: #fca5a5; /* Lighter red when disabled */
+  cursor: not-allowed;
+}
+
+.logout-button:hover:not(:disabled) {
+  background-color: #dc2626; /* Darker red on hover */
+}
+
+/* Styling for the login container */
+.login-container {
+  display: flex;
+  min-height: 100vh; /* Full height */
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem 1.5rem; /* Padding adjusted for small screens */
+}
+
+/* Center the header and set max width */
+.login-header {
+  margin: auto;
+  width: 100%;
+  max-width: 20rem; /* Adjust max width as necessary */
+}
+
+/* Title styling */
+.login-title {
+  margin-top: 2.5rem; /* Adjust top margin */
+  text-align: center;
+  font-size: 1.5rem; /* Corresponds to text-2xl */
+  font-weight: 700; /* Corresponds to font-bold */
+  line-height: 1.5; /* Adjust line height */
+  color: #1f2937; /* Corresponds to text-gray-900 */
+}
+
+/* Button container */
+.login-button-container {
+  margin-top: 2.5rem; /* Corresponds to mt-10 */
+  margin: auto;
+  width: 100%;
+  max-width: 20rem; /* Adjust max width as necessary */
+}
+
+/* Button styling */
+.login-button {
+  background-color: #3b82f6; /* Tailwind Blue-500 */
+  color: white;
+  width: 100%; /* Full width */
+  padding: 0.5rem 1rem; /* Corresponds to py-2 */
+  border-radius: 0.375rem; /* Corresponds to rounded-md */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #2563eb; /* Darker blue on hover */
+}
