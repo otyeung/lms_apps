@@ -40,3 +40,4 @@ client/next-env.d.ts
 /database/.docker
 client/package-lock.json
 /sample
+pnpm-lock.yaml
