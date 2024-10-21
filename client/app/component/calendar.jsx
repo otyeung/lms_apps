@@ -137,7 +137,7 @@ const Calendar = ({ userId }) => {
             setStartDate(earliestDate)
             setEndDate(getTodayUTC())
             setSelectedRange(
-              `Selected Date Range: ${earliestDate.toLocaleDateString(
+              `Selected Date Range(UTC) : ${earliestDate.toLocaleDateString(
                 'en-US'
               )} to ${getTodayUTC().toLocaleDateString('en-US')}`
             )

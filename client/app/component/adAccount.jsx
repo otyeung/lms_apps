@@ -274,15 +274,15 @@ const AdAccount = ({ adAccounts }) => {
         <table>
           <thead>
             <tr>
-              <th>Ads Account ID</th>
-              <th>Name</th>
+              <th>Account ID</th>
+              <th>Account Name</th>
               <th>Status</th>
               <th>Currency</th>
-              <th>Total Budget</th>
+              <th>Budget</th>
               <th>Type</th>
-              <th>Serving Statuses</th>
-              <th>Created At</th>
-              <th>Organization</th> {/* New header for Organization */}
+              <th>Serving Status</th>
+              <th>Created Date</th>
+              <th>Company Name</th>
             </tr>
           </thead>
           <tbody>
@@ -292,7 +292,7 @@ const AdAccount = ({ adAccounts }) => {
                 <td>{account.name}</td>
                 <td>{account.status}</td>
                 <td>{account.currency}</td>
-                <td>{account.totalBudget}</td>
+                <td>{account.totalBudgetAmount}</td>
                 <td>{account.type}</td>
                 <td>{formatServingStatuses(account.servingStatuses)}</td>
                 <td>{formatDate(account.createdAt)}</td>

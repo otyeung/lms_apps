@@ -10,7 +10,7 @@ import { redirect } from 'next/navigation'
 
 export default async function Home() {
   const session = await getServerSession(authOptions)
-  console.log('Session:', session) // Debugging output
+  //console.log('Session:', session) // Debugging output
 
   if (!session) {
     // Redirect to the login page if there's no session
