@@ -1,4 +1,4 @@
-// filename : app/component/AdAccount.jsx
+// filename: app/component/AdAccount.jsx
 
 'use client'
 
@@ -29,6 +29,7 @@ const AdAccount = ({ adAccounts }) => {
   // State to hold organizations and loading status
   const [organizations, setOrganizations] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null) // Added error state
 
   useEffect(() => {
     const fetchOrganizations = async () => {
@@ -40,22 +41,24 @@ const AdAccount = ({ adAccounts }) => {
               .replace('urn:li:organization:', '')
               .replace('urn:li:organizationBrand:', '')
           )
-          console.log('Organization IDs being sent:', organizationIds) // Add this
+          console.log('Organization IDs being sent:', organizationIds) // Log organization IDs
 
           const response = await axios.post('/api/organization', {
             organizationIds,
           })
           console.log('Response from API:', response.data) // Log the response
-          setOrganizations(response.data)
+          setOrganizations(response.data.data) // Ensure this is set correctly based on your API response structure
         } else {
           console.warn('adAccounts is not an array or is empty')
         }
       } catch (error) {
         console.error('Error fetching organizations:', error)
+        setError('Failed to fetch organizations') // Set error state
       } finally {
         setLoading(false)
       }
     }
+
     fetchOrganizations()
   }, [adAccounts])
 
@@ -118,8 +121,8 @@ const AdAccount = ({ adAccounts }) => {
       orgId,
       'with organizationId:',
       organization?.organizationId
-    ) // Add this
-    return organization ? organization.localizedName : 'N/A'
+    ) // Log matching organization
+    return organization ? organization.localizedName : 'N/A' // Return localizedName or 'N/A' if not found
   }
 
   return (
@@ -265,6 +268,8 @@ const AdAccount = ({ adAccounts }) => {
       {/* Render the filtered ad accounts table */}
       {loading ? (
         <p>Loading organizations...</p>
+      ) : error ? ( // Check for errors
+        <p>{error}</p>
       ) : filteredAdAccounts.length > 0 ? (
         <table>
           <thead>
@@ -287,28 +292,25 @@ const AdAccount = ({ adAccounts }) => {
                 <td>{account.name}</td>
                 <td>{account.status}</td>
                 <td>{account.currency}</td>
-                <td>
-                  {account.totalBudgetAmount
-                    ? `${account.totalBudgetAmount}`
-                    : 'N/A'}
-                </td>
+                <td>{account.totalBudget}</td>
                 <td>{account.type}</td>
                 <td>{formatServingStatuses(account.servingStatuses)}</td>
                 <td>{formatDate(account.createdAt)}</td>
                 <td>
                   {getOrganizationName(
-                    account.reference
-                      .replace('urn:li:organization:', '')
-                      .replace('urn:li:organizationBrand:', '')
+                    account.reference.replace(
+                      /urn:li:organization:|urn:li:organizationBrand:/g,
+                      ''
+                    )
                   )}
                 </td>{' '}
-                {/* Display localizedName */}
+                {/* Call the organization name retrieval */}
               </tr>
             ))}
           </tbody>
         </table>
       ) : (
-        <p>No ad accounts found for the selected filters.</p>
+        <p>No ad accounts match the selected filters.</p>
       )}
     </div>
   )

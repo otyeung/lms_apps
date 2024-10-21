@@ -22,14 +22,6 @@ export async function getAdAccounts(accessToken, linkedInVersion, userId) {
         }
       )
 
-      // Log the API call made
-      /*       console.log('Fetching LinkedIn ad accounts:', {
-        url: `https://api.linkedin.com/rest/adAccounts?q=search${
-          nextPageToken ? `&pageToken=${nextPageToken}` : ''
-        }`,
-        response: response.data,
-      }) */
-
       // Process the response
       const fetchedAccounts = response.data.elements.map((account) => ({
         adAccountId: String(account.id),
@@ -72,65 +64,58 @@ export async function getAdAccounts(accessToken, linkedInVersion, userId) {
       nextPageToken = response.data.metadata?.nextPageToken || null
     } while (nextPageToken)
 
-    // Sync with the database
-    for (const account of adAccounts) {
-      // Check if the ad account already exists
-      const existingAdAccount = await prisma.adAccount.findUnique({
-        where: { adAccountId: account.adAccountId }, // Look for existing account by adAccountId
-      })
+    // Fetch existing accounts in a single query
+    const existingAdAccounts = await prisma.adAccount.findMany({
+      where: {
+        adAccountId: { in: adAccounts.map((account) => account.adAccountId) },
+      },
+    })
 
-      const upsertData = {
-        where: existingAdAccount
-          ? { id: existingAdAccount.id } // Use existing account's id if it exists
-          : { adAccountId: account.adAccountId }, // Otherwise create a new one based on adAccountId
-        create: {
-          adAccountId: account.adAccountId,
-          userId: userId,
-          test: account.test,
-          totalBudgetCurrencyCode: account.totalBudgetCurrencyCode,
-          totalBudgetAmount: account.totalBudgetAmount,
-          notifiedOnCreativeRejection: account.notifiedOnCreativeRejection,
-          notifiedOnNewFeaturesEnabled: account.notifiedOnNewFeaturesEnabled,
-          notifiedOnEndOfCampaign: account.notifiedOnEndOfCampaign,
-          servingStatuses: account.servingStatuses,
-          type: account.type,
-          versionTag: account.versionTag,
-          reference: account.reference,
-          notifiedOnCreativeApproval: account.notifiedOnCreativeApproval,
-          createdAt: account.createdAt,
-          createdActor: account.createdActor,
-          lastModifiedAt: account.lastModifiedAt,
-          lastModifiedActor: account.lastModifiedActor,
-          name: account.name,
-          currency: account.currency,
-          status: account.status,
-          totalBudgetEndsAt: account.totalBudgetEndsAt,
-        },
-        update: {
-          test: account.test,
-          totalBudgetCurrencyCode: account.totalBudgetCurrencyCode,
-          totalBudgetAmount: account.totalBudgetAmount,
-          notifiedOnCreativeRejection: account.notifiedOnCreativeRejection,
-          notifiedOnNewFeaturesEnabled: account.notifiedOnNewFeaturesEnabled,
-          notifiedOnEndOfCampaign: account.notifiedOnEndOfCampaign,
-          servingStatuses: account.servingStatuses,
-          type: account.type,
-          versionTag: account.versionTag,
-          reference: account.reference,
-          notifiedOnCreativeApproval: account.notifiedOnCreativeApproval,
-          createdAt: account.createdAt,
-          createdActor: account.createdActor,
-          lastModifiedAt: account.lastModifiedAt,
-          lastModifiedActor: account.lastModifiedActor,
-          name: account.name,
-          currency: account.currency,
-          status: account.status,
-          totalBudgetEndsAt: account.totalBudgetEndsAt,
-        },
+    const existingAdAccountIds = new Set(
+      existingAdAccounts.map((acc) => acc.adAccountId)
+    )
+
+    const upsertPromises = adAccounts.map(async (account) => {
+      const accountData = {
+        adAccountId: account.adAccountId,
+        userId: userId,
+        test: account.test,
+        totalBudgetCurrencyCode: account.totalBudgetCurrencyCode,
+        totalBudgetAmount: account.totalBudgetAmount,
+        notifiedOnCreativeRejection: account.notifiedOnCreativeRejection,
+        notifiedOnNewFeaturesEnabled: account.notifiedOnNewFeaturesEnabled,
+        notifiedOnEndOfCampaign: account.notifiedOnEndOfCampaign,
+        servingStatuses: account.servingStatuses,
+        type: account.type,
+        versionTag: account.versionTag,
+        reference: account.reference,
+        notifiedOnCreativeApproval: account.notifiedOnCreativeApproval,
+        createdAt: account.createdAt,
+        createdActor: account.createdActor,
+        lastModifiedAt: account.lastModifiedAt,
+        lastModifiedActor: account.lastModifiedActor,
+        name: account.name,
+        currency: account.currency,
+        status: account.status,
+        totalBudgetEndsAt: account.totalBudgetEndsAt,
       }
 
-      await prisma.adAccount.upsert(upsertData)
-    }
+      const upsertData = {
+        where: existingAdAccountIds.has(account.adAccountId)
+          ? {
+              id: existingAdAccounts.find(
+                (acc) => acc.adAccountId === account.adAccountId
+              ).id,
+            }
+          : { adAccountId: account.adAccountId },
+        create: { ...accountData },
+        update: { ...accountData },
+      }
+
+      return prisma.adAccount.upsert(upsertData)
+    })
+
+    await Promise.all(upsertPromises)
 
     return adAccounts
   } catch (error) {

@@ -9,7 +9,8 @@ import { authOptions } from '../../api/auth/[...nextauth]/route'
 export async function getOrganizations(
   accessToken,
   linkedInVersion,
-  organizationIds = []
+  organizationIds = [],
+  userId // Added userId parameter
 ) {
   try {
     // Ensure organizationIds is an array and has at least one ID
@@ -36,14 +37,14 @@ export async function getOrganizations(
     const orgIds = Object.keys(organizationResults) // Extract the organization IDs from the response
     if (!orgIds.length) {
       console.log('No organization data found')
-      return []
+      return [] // Return an empty array if no organizations found
     }
 
     // Map over the organization IDs and create the organization objects
     const organizations = orgIds.map((id) => {
       const orgData = organizationResults[id]
       return {
-        organizationId: id, // The key is the organization ID
+        organizationId: id,
         name:
           orgData.name.localized?.[
             orgData.name.preferredLocale.language +
@@ -54,12 +55,13 @@ export async function getOrganizations(
         industries: orgData.industries || [],
         foundedYear: orgData.foundedYear || null,
         headquarters: orgData.headquarters || null,
-        websiteUrl: orgData.localizedWebsite || null, // Use 'localizedWebsite' instead of 'websiteUrl'
+        websiteUrl: orgData.localizedWebsite || null,
         employeeCountRange: orgData.employeeCountRange || null,
         specialties: orgData.specialties || [],
-        primaryOrganizationType: orgData.primaryOrganizationType || null, // Fetching primaryOrganizationType
-        createdAt: new Date().toISOString(), // No 'changeAuditStamps' in the provided response, default to current time
-        lastModifiedAt: new Date().toISOString(), // Same as above
+        primaryOrganizationType: orgData.primaryOrganizationType || null,
+        createdAt: new Date().toISOString(),
+        lastModifiedAt: new Date().toISOString(),
+        userId: userId, // Added userId
       }
     })
 
@@ -79,6 +81,7 @@ export async function getOrganizations(
           primaryOrganizationType: org.primaryOrganizationType,
           createdAt: org.createdAt,
           lastModifiedAt: org.lastModifiedAt,
+          userId: org.userId, // Set userId here
         },
         update: {
           name: org.name,
@@ -90,6 +93,7 @@ export async function getOrganizations(
           specialties: org.specialties,
           primaryOrganizationType: org.primaryOrganizationType,
           lastModifiedAt: org.lastModifiedAt,
+          userId: org.userId, // Set userId here
         },
       })
     })
@@ -97,9 +101,12 @@ export async function getOrganizations(
     // Await all upserts to complete
     await Promise.all(upsertPromises)
 
-    return organizations
+    return organizations // Return the organizations after upsert
   } catch (error) {
-    console.error('Error fetching LinkedIn organizations:', error)
+    console.error(
+      'Error fetching LinkedIn organizations:',
+      error.response?.data || error.message
+    )
     throw new Error(
       `Failed to fetch LinkedIn organizations: ${
         error.response?.data?.message || error.message
@@ -112,10 +119,25 @@ export async function getOrganizations(
 export async function POST(request) {
   const { organizationIds } = await request.json()
 
+  // Ensure organizationIds are provided
+  if (!organizationIds || !organizationIds.length) {
+    return new Response(
+      JSON.stringify({ error: 'No organization IDs provided' }),
+      { status: 400 }
+    )
+  }
+
   // Access the session to retrieve the access token
-  const session = await getServerSession({ req: request, ...authOptions }) // Using getServerSession correctly
-  const accessToken = session?.user?.accessToken // Ensure this matches your session structure
+  const session = await getServerSession({ req: request, ...authOptions })
+  if (!session) {
+    return new Response(JSON.stringify({ error: 'Session not found' }), {
+      status: 401,
+    })
+  }
+
+  const accessToken = session?.user?.accessToken
   const linkedInVersion = process.env.LINKEDIN_API_VERSION
+  const userId = session?.user?.id // Assuming userId is in session
 
   if (!accessToken) {
     return new Response(JSON.stringify({ error: 'Access token not found' }), {
@@ -124,14 +146,21 @@ export async function POST(request) {
   }
 
   try {
-    // Fetch organizations using the helper function
     const organizations = await getOrganizations(
       accessToken,
       linkedInVersion,
-      organizationIds
+      organizationIds,
+      userId // Pass userId to the function
     )
-    return new Response(JSON.stringify(organizations), { status: 200 })
+    return new Response(
+      JSON.stringify({
+        message: 'Organizations fetched successfully',
+        data: organizations,
+      }),
+      { status: 200 }
+    )
   } catch (error) {
+    console.error('Error in POST handler:', error)
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
     })
