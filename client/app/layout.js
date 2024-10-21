@@ -1,5 +1,6 @@
-// app/layout.js
-'use client' // This makes this component a Client Component
+// filename : app/layout.js
+
+'use client'
 
 import { Inter } from 'next/font/google'
 import './globals.css'

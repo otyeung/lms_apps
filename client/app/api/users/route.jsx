@@ -1,4 +1,4 @@
-// app/api/users/[id]/route.jsx
+// filename : app/api/users/[id]/route.jsx
 
 import prisma from '../../libs/prismadb'
 

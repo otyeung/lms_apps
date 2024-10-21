@@ -1,6 +1,6 @@
 // filename: app/component/Calendar.jsx
 
-'use client' // Mark this component as a client component
+'use client'
 
 import React, { useState, useEffect } from 'react'
 import DatePicker from 'react-datepicker'

@@ -40,7 +40,7 @@ export const authOptions = {
       session.user.accessToken = token.accessToken // Include access token in session
 
       // Log the session object
-      console.log('Current session object:', session)
+      //console.log('Current session object:', session)
 
       return session
     },

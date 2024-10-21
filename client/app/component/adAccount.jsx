@@ -1,6 +1,6 @@
 // filename : app/component/AdAccount.jsx
 
-'use client' // This file will be a Client Component
+'use client'
 
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'

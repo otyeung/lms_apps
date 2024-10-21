@@ -1,4 +1,5 @@
-// app/(site)/delete/route.jsx
+// filename : app/(site)/delete/route.jsx
+
 import prisma from '../../libs/prismadb' // Adjust the import based on your structure
 
 export async function DELETE(req) {

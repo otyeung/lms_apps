@@ -1,4 +1,4 @@
-// app/api/checkUser/route.jsx
+// filename : app/api/checkUser/route.jsx
 
 import prisma from '../../libs/prismadb'
 

@@ -1,4 +1,4 @@
-// app/api/deleteUser/route.jsx
+// filename : app/api/deleteUser/route.jsx
 
 import { NextResponse } from 'next/server'
 import prisma from '../../libs/prismadb'

@@ -2,7 +2,7 @@
 
 import prisma from '../../libs/prismadb'
 import axios from 'axios'
-import { getServerSession } from 'next-auth' // Importing getServerSession correctly
+import { getServerSession } from 'next-auth'
 import { authOptions } from '../../api/auth/[...nextauth]/route'
 
 // Helper function to fetch LinkedIn organizations

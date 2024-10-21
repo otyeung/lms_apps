@@ -6,7 +6,7 @@ import prisma from './libs/prismadb'
 import { getAdAccounts } from './api/adAccount/route'
 import AdAccount from './component/AdAccount'
 import Calendar from './component/Calendar'
-import { redirect } from 'next/navigation' // Import redirect
+import { redirect } from 'next/navigation'
 
 export default async function Home() {
   const session = await getServerSession(authOptions)
@@ -53,8 +53,6 @@ export default async function Home() {
 
   return (
     <section>
-      <h1>Report Downloader</h1>
-
       {userId ? (
         <>
           <Calendar userId={userId} />

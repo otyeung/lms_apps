@@ -1,7 +1,9 @@
+// filename : app/(site)/logout/route.jsx
+
 import { getServerSession } from 'next-auth/next'
 import { signOut } from 'next-auth/react'
 import { authOptions } from '../../api/auth/[...nextauth]/route'
-import prisma from '../../libs/prismadb' // Adjust the import based on your structure
+import prisma from '../../libs/prismadb'
 
 export async function GET(req) {
   const session = await getServerSession(authOptions)
